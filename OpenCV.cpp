@@ -46,7 +46,7 @@ int main()
 
 	}
 
-	// 
+	// MatchShapes berechnen
 	double d1 = matchShapes(im1, im2, CONTOURS_MATCH_I1, 0);
 	double d2 = matchShapes(im1, im2, CONTOURS_MATCH_I2, 0);
 	double d3 = matchShapes(im1, im2, CONTOURS_MATCH_I3, 0);

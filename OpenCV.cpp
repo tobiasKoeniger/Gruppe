@@ -1,3 +1,7 @@
+// compile opencv4 with: sudo cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local .. -DOPENCV_GENERATE_PKGCONFIG=ON
+
+// compile and run with: g++ OpenCV.cpp `pkg-config --cflags --libs opencv4` & ./a.out 
+
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
@@ -14,7 +18,6 @@ int main()
 {
 
 	// Read image as grayscale image
-	// C:\\Users\\Tobias\\OneDrive\\AT Projekt\\Project1
 	Mat im1 = imread("1.png", IMREAD_GRAYSCALE);
 	Mat im2 = imread("2.png", IMREAD_GRAYSCALE);
 
@@ -28,6 +31,7 @@ int main()
 
 	// Calculate Hu Moments
 	double huMoments1[7];
+
 	HuMoments(moments1, huMoments1);
 
 	double huMoments2[7];
@@ -46,21 +50,23 @@ int main()
 
 	}
 
-	// MatchShapes berechnen
+	// MatchShapes berechnen 
 	double d1 = matchShapes(im1, im2, CONTOURS_MATCH_I1, 0);
 	double d2 = matchShapes(im1, im2, CONTOURS_MATCH_I2, 0);
 	double d3 = matchShapes(im1, im2, CONTOURS_MATCH_I3, 0);
 
 	//
-	cout << "\n\n" << "matchShapes, CONTOUR_MATCH_I1: " << d1 << "\n";
+	cout << "\n" << "matchShapes, CONTOUR_MATCH_I1: " << d1 << "\n";
 	cout << "matchShapes, CONTOUR_MATCH_I2: " << d2 << "\n";
 	cout << "matchShapes, CONTOUR_MATCH_I3: " << d3 << "\n";
 
 	//
-	imshow("Image 1", im1);
+	imshow("image 1", im1);
 	imshow("Image 2", im2);
 
 	waitKey(0);
+
+	cout << "\n" << "OpenCV Version: " << CV_MAJOR_VERSION << "." << CV_MINOR_VERSION << "\n\n";
 
 	//
 	return 0;

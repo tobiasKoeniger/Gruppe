@@ -66,6 +66,7 @@ int main()
 
 	waitKey(0);
 
+	// Zeige OpenCV Version
 	cout << "\n" << "OpenCV Version: " << CV_MAJOR_VERSION << "." << CV_MINOR_VERSION << "\n\n";
 
 	//

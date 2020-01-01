@@ -2,6 +2,8 @@
 
 // compile and run with: g++ OpenCV.cpp `pkg-config --cflags --libs opencv4` & ./a.out 
 
+// commit and push to git with: git add . ; git commit -m "Next commit3" ; git push origin master
+
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/objdetect/objdetect.hpp>

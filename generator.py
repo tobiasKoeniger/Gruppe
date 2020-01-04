@@ -5,6 +5,8 @@
 from os import listdir
 import numpy as np
 
+from random import randint
+
 import cv2
 
 print("x"*50)
@@ -68,9 +70,37 @@ pic1 = (255-img[1])
 pic_res = pic0 + pic1
 pic_res = (255-pic_res)
 
+print()
+print("Random number between 0 and 10: ")
+print(randint(0, 10))
+
 cv2.imshow('Image 0', pic0)
 cv2.imshow('Image 1', pic1)
 cv2.imshow('Image res', pic_res)	
+
+rows, cols = pic_res.shape
+
+x_translate = 100
+y_translate = 50 
+
+M = np.float32([[1,0,x_translate], [0,1,y_translate]])
+pic_res = cv2.warpAffine(pic_res, M, (cols,rows), borderMode = cv2.BORDER_REPLICATE)
+
+print()
+print("Verschiebungsmatrix: ")
+print(M)
+
+cv2.imshow('Image res - translate', pic_res)
+
+winkel = 23
+
+rows, cols = pic_res.shape
+
+# Argumente: Center, Angle, Scale
+M = cv2.getRotationMatrix2D((cols/2,rows/2),winkel,1)
+pic_res = cv2.warpAffine(pic_res, M, (cols,rows), borderMode = cv2.BORDER_REPLICATE)
+
+cv2.imshow('Image res - rotate', pic_res)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()	

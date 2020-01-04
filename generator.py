@@ -237,7 +237,11 @@ for i, c in enumerate(contours):
 	getOrientation(c, pic_res)
 
 cv2.imshow('output', pic_res)
-print()
+
+pic_flip = cv2.flip(pic_res, 1)
+
+cv2.imshow('output', pic_flip)
+
 #print(eigenVectors)
 
 cv2.waitKey(0)

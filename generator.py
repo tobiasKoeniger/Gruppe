@@ -48,7 +48,7 @@ def rotate(img, winkel):
 
 	# Argumente: Center, Angle, Scale
 	M = cv2.getRotationMatrix2D((cols/2,rows/2),winkel,1)
-	pic_res = cv2.warpAffine(img, M, (cols,rows), borderMode = cv2.BORDER_REPLICATE)
+	img = cv2.warpAffine(img, M, (cols,rows), borderMode = cv2.BORDER_REPLICATE)
 
 	return img
 
@@ -137,44 +137,7 @@ def get_zernikeMoments(img):
 get_zernikeMoments(scene)
 
 
-
-# PCA
-# mean, eigenVectors = cv2.PCACompute(pic_res, mean=None, maxComponents=2)
-
-def getOrientation(contour, img):
-
-	sz = len(contour)
-	data_pts = np.empty((sz, 2), dtype=np.float64)
-
-	for i in range(data_pts.shape[0]):
-	    data_pts[i,0] = contour[i,0,0]
-	    data_pts[i,1] = contour[i,0,1]
-
-	# Perform PCA analysis
-	mean = np.empty((0))
-	mean, eigenvectors, eigenvalues = cv2.PCACompute2(data_pts, mean)
-	# Store the center of the object
-	cntr = (int(mean[0,0]), int(mean[0,1]))
-
-	cv2.circle(img, cntr, 4, (0, 255, 0), 1)
-
-	# p1 = x1, y1
-	# p2 = x2, y2
-	p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0])
-	p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0])
-
-	drawAxis(img, cntr, p1, (0, 255, 0), 1)
-	drawAxis(img, cntr, p2, (0, 255, 0), 1)
-
-	print()
-	print("Eigenvectors: {}".format(eigenvectors))
-	print()
-	print("Eigenwerte: {}".format(eigenvalues))
-
-	angle = atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
-
-	return angle
-
+# PCA Achsen Zeichnen
 def drawAxis(img, p_, q_, colour, scale):
     p = list(p_)
     q = list(q_)
@@ -197,38 +160,85 @@ def drawAxis(img, p_, q_, colour, scale):
     cv2.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), colour, 1, cv2.LINE_AA)
 
 
-# Convert image to grayscale
-#gray = cv2.cvtColor(pic_res, cv2.COLOR_BGR2GRAY)
 
-# Convert image to binary
-_, bw = cv2.threshold(scene, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-## [pre-process]
+scene = rotate(scene, -45)
+scene = translate(scene, 80, -80)
 
-contours, _ = cv2.findContours(bw, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
-# print("\nContours: {}".format(contours))
+def pca(img):
 
-for i, c in enumerate(contours):
-	# Calculate the area of each contour
-	area = cv2.contourArea(c)
-	# Ignore contours that are too small or too large
-	if area < 1e2 or 1e5 < area:
-	    continue
-	# Draw each contour only for visualisation purposes
-	# cv2.drawContours(pic_res, contours, i, (0, 255, 0), 1)
-	# Find the orientation of each shape
+	# Convert image to binary
+	_, bw = cv2.threshold(scene, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
-	getOrientation(c, scene)
+	contours, _ = cv2.findContours(bw, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
-# mean = np.empty((0))
-# mean, eigenvectors, eigenvalues = cv2.PCACompute2(scene, mean, maxComponents=4)
+	# PCA for everything
+	contour_size = 0
 
-# print()
-# print("mean: {}".format(mean))
-# print("eigenvectors: {}".format(eigenvectors))
-# print("eigenvalues: {}".format(eigenvalues))
+	for i, contour in enumerate(contours):
+		area = cv2.contourArea(contour)
+		# Ignore contours that are too small or too large
+		if area < 1e2 or 1e5 < area:
+		    continue
 
-# print(cv2.PCACompute2(scene, mean=None))
+		contour_size += len(contour)
+
+	all_data_pts = np.empty((contour_size, 2), dtype=np.float64)
+
+
+	k = 0
+
+	for i, contour in enumerate(contours):
+
+		area = cv2.contourArea(contour)
+		# Ignore contours that are too small or too large
+		if area < 1e2 or 1e5 < area:
+		    continue
+
+		sz = len(contour)
+		data_pts = np.empty((sz, 2), dtype=np.float64)
+
+		for i in range(data_pts.shape[0]):
+			data_pts[i,0] = contour[i,0,0]
+			data_pts[i,1] = contour[i,0,1]
+
+			all_data_pts[i+k,0] = contour[i,0,0]
+			all_data_pts[i+k,1] = contour[i,0,1]
+
+		k += len(contour)
+
+	# import sys
+	# np.set_printoptions(threshold=sys.maxsize)
+	# print("{}".format(all_data_pts))
+
+	# Perform PCA analysis
+	mean = np.empty((0))
+	mean, eigenvectors, eigenvalues = cv2.PCACompute2(all_data_pts, mean)
+	# Store the center of the object
+	cntr = (int(mean[0,0]), int(mean[0,1]))
+
+	cv2.circle(scene, cntr, 4, (0, 255, 0), 1)
+
+	# p1 = x1, y1
+	# p2 = x2, y2
+	p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0])
+	p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0])
+
+	drawAxis(scene, cntr, p1, (0, 255, 0), 1)
+	drawAxis(scene, cntr, p2, (0, 255, 0), 1)
+
+	print()
+	print("Eigenvectors: {}".format(eigenvectors))
+	print()
+	print("Eigenwerte: {}".format(eigenvalues))
+
+	angle = atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
+
+	return scene
+
+
+scene = pca(scene)
+
 
 cv2.imshow('output', scene)
 

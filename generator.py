@@ -22,56 +22,6 @@ print("Image Generator")
 print("x"*50)
 print()
 
-entries = listdir('Kanten/')
-
-image_counter = 0
-
-print("Gefundene Bilder: ")
-for file in entries:
-	if ".png" in file or ".jpg" in file:
-		print(file)
-		image_counter += 1
-
-print()
-print("Anzahl der gefundenen Bilder: {}".format(image_counter))
-
-# print("Länge: {}".format(len(entries)))
-
-
-oben_count = 0
-unten_count = 0
-rechts_count = 0
-links_count = 0
-
-for file in entries:
-	if "oben" in file:
-		oben_count += 1
-
-	if "rechts" in file:
-		rechts_count += 1
-
-	if "unten" in file:
-		unten_count += 1
-
-	if "links" in file:
-		links_count += 1
-
-print()
-print("Varianten oben: {}".format(oben_count))
-print("Varianten rechts: {}".format(rechts_count))
-print("Varianten unten: {}".format(unten_count))
-print("Varianten links: {}".format(links_count))
-
-print()
-print("Varianten: {}".format(oben_count*rechts_count*unten_count*links_count))
-
-img = []
-
-for num, file in enumerate(entries):
-	if ".png" in file or ".jpg" in file:
-		print("Reading image: {}, No. {}".format(file, num))
-		path = "Kanten/" + file
-		img.append(cv2.imread(path, 0))
 
 
 def invert_image(img):
@@ -103,6 +53,7 @@ def rotate(img, winkel):
 	return img
 
 
+# Generate Scene
 line_styles = ["dreieck", "ellipse", "gerade", "rechteck"]
 orientierung = ["links", "oben", "rechts", "unten"]
 path0 = ["", "", "", ""]
@@ -135,16 +86,6 @@ scene = add_images(obj0, obj1)
 cv2.imshow("Scene", scene)
 
 
-# pic_flip = cv2.flip(pic_res, 0)
-# cv2.imshow('flip', pic_flip)
-
-print()
-print("Random number between 0 and 10: ")
-print(randint(0, 10))
-
-
-# cv2.imshow('Image res - translate', pic_res)
-# cv2.imshow('Image res - rotate', pic_res)
 
 def get_huMoments(img):
 	# Hu-Momente
@@ -172,9 +113,7 @@ def get_matchShapes(img0, img1):
 
 	return contours_match
 
-# get_matchShapes()
 
-# Zernike Moments
 # Flächenschwerpunkt berechnen
 moments = cv2.moments(scene, False)
 
@@ -185,6 +124,7 @@ print()
 print("Flächenschwerpunkt: {}, {}".format(cX, cY))
 
 
+# Zernike Moments
 def get_zernikeMoments(img):
 	ordnung = 8
 	radius = 200
@@ -195,6 +135,8 @@ def get_zernikeMoments(img):
 	return zernike
 
 get_zernikeMoments(scene)
+
+
 
 # PCA
 # mean, eigenVectors = cv2.PCACompute(pic_res, mean=None, maxComponents=2)
@@ -278,7 +220,8 @@ for i, c in enumerate(contours):
 
 	getOrientation(c, scene)
 
-# mean, eigenvectors, eigenvalues = cv2.PCACompute2(scene, mean=None)
+# mean = np.empty((0))
+# mean, eigenvectors, eigenvalues = cv2.PCACompute2(scene, mean, maxComponents=4)
 
 # print()
 # print("mean: {}".format(mean))
@@ -289,7 +232,6 @@ for i, c in enumerate(contours):
 
 cv2.imshow('output', scene)
 
-#print(eigenVectors)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

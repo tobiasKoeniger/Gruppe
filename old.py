@@ -22,3 +22,7 @@ pic_res = cv2.warpAffine(pic_res, M, (cols,rows), borderMode = cv2.BORDER_REPLIC
 print()
 print("Verschiebungsmatrix: ")
 print(M)
+
+
+
+

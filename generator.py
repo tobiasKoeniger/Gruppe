@@ -161,7 +161,7 @@ def drawAxis(img, p_, q_, colour, scale):
 
 
 
-scene = rotate(scene, -45)
+scene = rotate(scene, 45)
 scene = translate(scene, 80, -80)
 
 
@@ -198,6 +198,8 @@ def pca(img):
 		sz = len(contour)
 		data_pts = np.empty((sz, 2), dtype=np.float64)
 
+		# cv2.drawContours(scene, contours, i, (0, 255, 0), 3)
+
 		for i in range(data_pts.shape[0]):
 			data_pts[i,0] = contour[i,0,0]
 			data_pts[i,1] = contour[i,0,1]
@@ -206,6 +208,8 @@ def pca(img):
 			all_data_pts[i+k,1] = contour[i,0,1]
 
 		k += len(contour)
+
+
 
 	# import sys
 	# np.set_printoptions(threshold=sys.maxsize)

@@ -85,13 +85,17 @@ pic1 = invert_image(img[1])
 pic_res = pic0 + pic1
 pic_res = invert_image(pic_res)
 
+pic_flip = cv2.flip(pic_res, 0)
+
+cv2.imshow('flip', pic_flip)
+
 print()
 print("Random number between 0 and 10: ")
 print(randint(0, 10))
 
 # cv2.imshow('Image 0', pic0)
 # cv2.imshow('Image 1', pic1)
-# cv2.imshow('Image res', pic_res)
+cv2.imshow('Image res', pic_res)
 
 pic_ursprung = pic_res
 
@@ -237,10 +241,6 @@ for i, c in enumerate(contours):
 	getOrientation(c, pic_res)
 
 cv2.imshow('output', pic_res)
-
-pic_flip = cv2.flip(pic_res, 1)
-
-cv2.imshow('output', pic_flip)
 
 #print(eigenVectors)
 

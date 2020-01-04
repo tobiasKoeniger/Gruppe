@@ -24,5 +24,14 @@ print("Verschiebungsmatrix: ")
 print(M)
 
 
+# cv2.imshow('Image res - translate', pic_res)
+# cv2.imshow('Image res - rotate', pic_res)
 
+
+# pic_flip = cv2.flip(pic_res, 0)
+# cv2.imshow('flip', pic_flip)
+
+print()
+print("Random number between 0 and 10: ")
+print(randint(0, 10))
 

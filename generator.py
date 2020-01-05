@@ -12,6 +12,7 @@ import numpy as np
 
 from random import randint
 from mahotas import features
+from sklearn.decomposition import PCA
 import math
 import cv2
 
@@ -228,8 +229,8 @@ def pca(img):
 	p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0])
 	p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0])
 
-	drawAxis(scene, cntr, p1, (0, 255, 0), 1)
-	drawAxis(scene, cntr, p2, (0, 255, 0), 1)
+	# drawAxis(scene, cntr, p1, (0, 255, 0), 1)
+	# drawAxis(scene, cntr, p2, (0, 255, 0), 1)
 
 	print()
 	print("Eigenvectors: {}".format(eigenvectors))
@@ -238,14 +239,72 @@ def pca(img):
 
 	angle = atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
 
+
+	rows, cols = img.shape
+	count = 0
+	for y in range(rows):
+		for x in range(cols):
+			if bw[y, x] <= 50:
+				count += 1
+
+	a = np.empty((count, 2), dtype=np.float64)
+
+	cc = 0
+	for y in range(rows):
+		for x in range(cols):
+			if bw[y, x] <= 50:
+				a[cc, 0] = x
+				a[cc, 1] = y
+				cc += 1
+
+	# PCA mit sklearn
+	pca = PCA(n_components=2)
+	pca.fit(a)
+
+	print(pca.components_)
+	print(pca.explained_variance_)
+
+	eigenvectors = pca.components_
+	eigenvalues = pca.explained_variance_
+
+	print()
+	print("Eigenvectors: {}".format(eigenvectors))
+	print()
+	print("Eigenwerte: {}".format(eigenvalues))
+
+	p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0])
+	p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1])
+
+	drawAxis(scene, cntr, p1, (0, 255, 0), 1)
+	drawAxis(scene, cntr, p2, (0, 255, 0), 1)
+
+	# PCA mit sklearn
+	pca = PCA(n_components=2)
+	pca.fit(all_data_pts)
+
+	print(pca.components_)
+	print(pca.explained_variance_)
+
+	eigenvectors = pca.components_
+	eigenvalues = pca.explained_variance_
+
+	print()
+	print("Eigenvectors: {}".format(eigenvectors))
+	print()
+	print("Eigenwerte: {}".format(eigenvalues))
+
+	p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0])
+	p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1])
+
+	# drawAxis(scene, cntr, p1, (0, 255, 0), 1)
+	# drawAxis(scene, cntr, p2, (0, 255, 0), 1)
+
 	return scene
 
 
 scene = pca(scene)
 
-
 cv2.imshow('output', scene)
-
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

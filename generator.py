@@ -17,7 +17,6 @@ import math
 import cv2
 
 
-
 print("x"*50)
 print("Image Generator")
 print("x"*50)

@@ -121,6 +121,8 @@ def calcCentroid(img):
 
     print()
     print("Flächenschwerpunkt: {}, {}".format(cX, cY))
+    
+    return [cX, cY]
 
 
 # Zernike Moments
@@ -166,21 +168,21 @@ cv2.imshow("Scene", scene)
 #cv2.imshow("Scene2", scene2)
 
 get_huMoments(scene, "scene")
-calcCentroid(invert_image(scene))
+sceneCentroidCoordinate = calcCentroid(invert_image(scene))
 get_zernikeMoments(scene, "Scene")
 
 output1 = rotate(scene, randint(0, 360))
 output1 = translate(output1, randint(-200, 200), randint(-200, 200))
 
 get_huMoments(output1, "output1")
-calcCentroid(invert_image(output1))
+output1CentroidCoordinate = calcCentroid(invert_image(output1))
 get_zernikeMoments(output1, "Output1")
 
 output2 = rotate(scene, randint(0, 360))
 output2 = translate(output2, randint(-200, 200), randint(-200, 200))
 
 get_huMoments(output2, "output2")
-calcCentroid(invert_image(output2))
+output2CentroidCoordinate = calcCentroid(invert_image(output2))
 get_zernikeMoments(output2, "Output2")
 
 #get_zernikeMoments(scene2, "Scene2")
@@ -323,12 +325,23 @@ def pca(img):
 
 	return img
 
+def centralizeOutputs(img1, img2, coordinatesCentroidImg1, coordinatesCentroidImg2):
+    img1 = translate(img1, -coordinatesCentroidImg1[0]+300, -coordinatesCentroidImg1[1]+400)
+    #print(-coordinatesCentroidImg1[0]+300)
+    #print(-coordinatesCentroidImg1[1]+400)
+    img2 = translate(img2, -coordinatesCentroidImg2[0]+300, -coordinatesCentroidImg2[1]+400)
+    #print(-coordinatesCentroidImg2[0]+300)
+    #print(-coordinatesCentroidImg2[1]+400)
+    resultImg = add_images(img1, img2)
+    cv2.imshow('result', resultImg)
 
 output1 = pca(output1)
 output2 = pca(output2)
 
 cv2.imshow('output1', output1)
 cv2.imshow('output2', output2)
+
+centralizeOutputs(output1, output2, output1CentroidCoordinate, output2CentroidCoordinate)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

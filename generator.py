@@ -325,13 +325,13 @@ def pca(img):
 
 	return img
 
-def centralizeOutputs(img1, img2, coordinatesCentroidImg1, coordinatesCentroidImg2):
-    img1 = translate(img1, -coordinatesCentroidImg1[0]+300, -coordinatesCentroidImg1[1]+400)
-    #print(-coordinatesCentroidImg1[0]+300)
-    #print(-coordinatesCentroidImg1[1]+400)
-    img2 = translate(img2, -coordinatesCentroidImg2[0]+300, -coordinatesCentroidImg2[1]+400)
-    #print(-coordinatesCentroidImg2[0]+300)
-    #print(-coordinatesCentroidImg2[1]+400)
+def centralizeOutputs(img1, img2, img1CentroidCoordinate, img2CentroidCoordinate):
+    img1 = translate(img1, -img1CentroidCoordinate[0]+300, -img1CentroidCoordinate[1]+400)
+    #print(-img1CentroidCoordinate[0]+300)
+    #print(-img1CentroidCoordinate[1]+400)
+    img2 = translate(img2, -img2CentroidCoordinate[0]+300, -img2CentroidCoordinate[1]+400)
+    #print(-img2CentroidCoordinate[0]+300)
+    #print(-img2CentroidCoordinate[1]+400)
     resultImg = add_images(img1, img2)
     cv2.imshow('result', resultImg)
 

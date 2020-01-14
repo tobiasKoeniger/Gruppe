@@ -166,21 +166,21 @@ cv2.imshow("Scene", scene)
 #cv2.imshow("Scene2", scene2)
 
 get_huMoments(scene, "scene")
-calcCentroid(scene)
+calcCentroid(invert_image(scene))
 get_zernikeMoments(scene, "Scene")
 
 output1 = rotate(scene, randint(0, 360))
 output1 = translate(output1, randint(-200, 200), randint(-200, 200))
 
 get_huMoments(output1, "output1")
-calcCentroid(output1)
+calcCentroid(invert_image(output1))
 get_zernikeMoments(output1, "Output1")
 
 output2 = rotate(scene, randint(0, 360))
 output2 = translate(output2, randint(-200, 200), randint(-200, 200))
 
 get_huMoments(output2, "output2")
-calcCentroid(output2)
+calcCentroid(invert_image(output2))
 get_zernikeMoments(output2, "Output2")
 
 #get_zernikeMoments(scene2, "Scene2")

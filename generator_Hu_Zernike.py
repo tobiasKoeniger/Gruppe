@@ -83,7 +83,7 @@ def generateScene():
     obj1 = add_images4(img1[0], img1[1], img1[2], img1[3])
 
     obj1 = translate(obj1, 0, 100)
-    
+
     return add_images(obj0,obj1)
 
 
@@ -122,7 +122,7 @@ def calcCentroid(img):
 
     print()
     print("Flächenschwerpunkt: {}, {}".format(cX, cY))
-    
+
     return [cX, cY]
 
 
@@ -147,7 +147,7 @@ def zernikeMatchShapes(img1, img2):
 	zernike_contours_match1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 	for k in range(0, 24):
 		zernike_contours_match1[k] = abs(1/(zernike1[k]) - 1/(zernike2[k]))
-		
+
 	zernike_contours_match2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 	for w in range(0, 24):
 		zernike_contours_match2[w] = abs(zernike1[w] - zernike2[w])
@@ -186,63 +186,47 @@ def drawAxis(img, p_, q_, colour, scale):
     p[1] = q[1] + 9 * sin(angle - pi / 4)
     cv2.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), colour, 1, cv2.LINE_AA)
 
+def fullfillContour(img):
+	# Threshold.
+	# Set values equal to or above 220 to 0.
+	# Set values below 220 to 255.
+
+	th, im_th = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY_INV);
+
+	# Copy the thresholded image.
+	im_floodfill = im_th.copy()
+
+	# Mask used to flood filling.
+	# Notice the size needs to be 2 pixels than the image.
+	h, w = im_th.shape[:2]
+	mask = np.zeros((h+2, w+2), np.uint8)
+
+	# Floodfill from point (0, 0)
+	cv2.floodFill(im_floodfill, mask, (0,0), 255);
+
+	# Invert floodfilled image
+	im_floodfill_inv = cv2.bitwise_not(im_floodfill)
+
+	# Combine the two images to get the foreground.
+	img_out = im_th | im_floodfill_inv
+
+	return invert_image(img_out)
 
 #Ausführbereich
 
 scene = generateScene()
 scene2 = generateScene()
 
-# Threshold.
-# Set values equal to or above 220 to 0.
-# Set values below 220 to 255.
- 
-th, im_th = cv2.threshold(scene, 220, 255, cv2.THRESH_BINARY_INV);
- 
-# Copy the thresholded image.
-im_floodfill = im_th.copy()
- 
-# Mask used to flood filling.
-# Notice the size needs to be 2 pixels than the image.
-h, w = im_th.shape[:2]
-mask = np.zeros((h+2, w+2), np.uint8)
- 
-# Floodfill from point (0, 0)
-cv2.floodFill(im_floodfill, mask, (0,0), 255);
- 
-# Invert floodfilled image
-im_floodfill_inv = cv2.bitwise_not(im_floodfill)
- 
-# Combine the two images to get the foreground.
-scene_out = im_th | im_floodfill_inv
+kernel = np.ones((5,5),np.uint8)
 
-scene_out = invert_image(scene_out)
+scene_out = cv2.erode(scene,kernel,iterations = 1)
+scene_out2 = cv2.erode(scene2,kernel,iterations = 1)
+
+scene_out = fullfillContour(scene_out)
 
 cv2.imshow("Scene", scene_out)
 
-# Threshold.
-# Set values equal to or above 220 to 0.
-# Set values below 220 to 255.
- 
-th, im_th = cv2.threshold(scene2, 220, 255, cv2.THRESH_BINARY_INV);
- 
-# Copy the thresholded image.
-im_floodfill = im_th.copy()
- 
-# Mask used to flood filling.
-# Notice the size needs to be 2 pixels than the image.
-h, w = im_th.shape[:2]
-mask = np.zeros((h+2, w+2), np.uint8)
- 
-# Floodfill from point (0, 0)
-cv2.floodFill(im_floodfill, mask, (0,0), 255);
- 
-# Invert floodfilled image
-im_floodfill_inv = cv2.bitwise_not(im_floodfill)
- 
-# Combine the two images to get the foreground.
-scene_out2 = im_th | im_floodfill_inv
-
-scene_out2 = invert_image(scene_out2)
+scene_out2 = fullfillContour(scene_out2)
 
 cv2.imshow("Scene2", scene_out2)
 #cv2.imshow("Scene2", scene2)
@@ -252,14 +236,14 @@ sceneCentroidCoordinate = calcCentroid(invert_image(scene_out))
 get_zernikeMoments(scene_out, "Scene")
 
 output1 = rotate(scene_out, randint(0, 360))
-output1 = translate(output1, randint(-200, 200), randint(-200, 200))
+output1 = translate(output1, randint(-150, 150), randint(-150, 150))
 
 get_huMoments(output1, "output1")
 output1CentroidCoordinate = calcCentroid(invert_image(output1))
 get_zernikeMoments(output1, "Output1")
 
 output2 = rotate(scene_out, randint(0, 360))
-output2 = translate(output2, randint(-200, 200), randint(-200, 200))
+output2 = translate(output2, randint(-150, 150), randint(-150, 150))
 
 get_huMoments(output2, "output2")
 output2CentroidCoordinate = calcCentroid(invert_image(output2))
@@ -271,7 +255,7 @@ get_matchShapes(invert_image(scene_out), invert_image(output1), "scene", "output
 get_matchShapes(invert_image(scene_out), invert_image(scene_out2), "scene", "scene2")
 
 def pca(img):
-	
+
 	# Convert image to binary
 	_, bw = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 

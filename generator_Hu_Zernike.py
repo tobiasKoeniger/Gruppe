@@ -186,64 +186,116 @@ def drawAxis(img, p_, q_, colour, scale):
     p[1] = q[1] + 9 * sin(angle - pi / 4)
     cv2.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), colour, 1, cv2.LINE_AA)
 
-def fullfillContour(img):
-	# Threshold.
-	# Set values equal to or above 220 to 0.
-	# Set values below 220 to 255.
-
-	th, im_th = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY_INV);
-
-	# Copy the thresholded image.
-	im_floodfill = im_th.copy()
-
-	# Mask used to flood filling.
-	# Notice the size needs to be 2 pixels than the image.
-	h, w = im_th.shape[:2]
-	mask = np.zeros((h+2, w+2), np.uint8)
-
-	# Floodfill from point (0, 0)
-	cv2.floodFill(im_floodfill, mask, (0,0), 255);
-
-	# Invert floodfilled image
-	im_floodfill_inv = cv2.bitwise_not(im_floodfill)
-
-	# Combine the two images to get the foreground.
-	img_out = im_th | im_floodfill_inv
-
-	return invert_image(img_out)
 
 #Ausführbereich
 
 scene = generateScene()
 scene2 = generateScene()
 
-kernel = np.ones((5,5),np.uint8)
+<<<<<<< HEAD:generator_zernike.py
+_, bw = cv2.threshold(scene, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
-scene_out = cv2.erode(scene,kernel,iterations = 1)
-scene_out2 = cv2.erode(scene2,kernel,iterations = 1)
+contours, _ = cv2.findContours(bw, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+contour_size = 0
 
-scene_out = fullfillContour(scene_out)
+for i, contour in enumerate(contours):
+
+	area = cv2.contourArea(contour)
+	# Ignore contours that are too small or too large
+	if area < 1e2 or 1e5 < area:
+		continue
+
+	sz = len(contour)
+
+	cv2.drawContours(scene, contours, i, (0, 255, 0), -1)
+
+#_, bw = cv2.threshold(scene2, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+#contours, _ = cv2.findContours(bw, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+#cv2.drawContours(scene2, contours, 6, (0, 255, 0), -1)
+
+cv2.imshow("Scene", scene)
+cv2.imshow("Scene2", scene2)
+=======
+# Threshold.
+# Set values equal to or above 220 to 0.
+# Set values below 220 to 255.
+
+th, im_th = cv2.threshold(scene, 220, 255, cv2.THRESH_BINARY_INV);
+
+# Copy the thresholded image.
+im_floodfill = im_th.copy()
+
+# Mask used to flood filling.
+# Notice the size needs to be 2 pixels than the image.
+h, w = im_th.shape[:2]
+mask = np.zeros((h+2, w+2), np.uint8)
+
+# Floodfill from point (0, 0)
+cv2.floodFill(im_floodfill, mask, (0,0), 255);
+
+# Invert floodfilled image
+im_floodfill_inv = cv2.bitwise_not(im_floodfill)
+
+# Combine the two images to get the foreground.
+scene_out = im_th | im_floodfill_inv
+
+scene_out = invert_image(scene_out)
 
 cv2.imshow("Scene", scene_out)
 
-scene_out2 = fullfillContour(scene_out2)
+# Threshold.
+# Set values equal to or above 220 to 0.
+# Set values below 220 to 255.
+
+th, im_th = cv2.threshold(scene2, 220, 255, cv2.THRESH_BINARY_INV);
+
+# Copy the thresholded image.
+im_floodfill = im_th.copy()
+
+# Mask used to flood filling.
+# Notice the size needs to be 2 pixels than the image.
+h, w = im_th.shape[:2]
+mask = np.zeros((h+2, w+2), np.uint8)
+
+# Floodfill from point (0, 0)
+cv2.floodFill(im_floodfill, mask, (0,0), 255);
+
+# Invert floodfilled image
+im_floodfill_inv = cv2.bitwise_not(im_floodfill)
+
+# Combine the two images to get the foreground.
+scene_out2 = im_th | im_floodfill_inv
+
+scene_out2 = invert_image(scene_out2)
 
 cv2.imshow("Scene2", scene_out2)
 #cv2.imshow("Scene2", scene2)
+>>>>>>> 7eb7b33a941b3558837e17cb25cbb10566dea2ce:generator_Hu_Zernike.py
 
 get_huMoments(scene_out, "scene_out")
 sceneCentroidCoordinate = calcCentroid(invert_image(scene_out))
 get_zernikeMoments(scene_out, "Scene")
 
-output1 = rotate(scene_out, randint(0, 360))
+<<<<<<< HEAD:generator_zernike.py
+output1 = rotate(scene, randint(0, 360))
 output1 = translate(output1, randint(-150, 150), randint(-150, 150))
+=======
+output1 = rotate(scene_out, randint(0, 360))
+output1 = translate(output1, randint(-200, 200), randint(-200, 200))
+>>>>>>> 7eb7b33a941b3558837e17cb25cbb10566dea2ce:generator_Hu_Zernike.py
 
 get_huMoments(output1, "output1")
 output1CentroidCoordinate = calcCentroid(invert_image(output1))
 get_zernikeMoments(output1, "Output1")
 
-output2 = rotate(scene_out, randint(0, 360))
+<<<<<<< HEAD:generator_zernike.py
+output2 = rotate(scene, randint(0, 360))
 output2 = translate(output2, randint(-150, 150), randint(-150, 150))
+=======
+output2 = rotate(scene_out, randint(0, 360))
+output2 = translate(output2, randint(-200, 200), randint(-200, 200))
+>>>>>>> 7eb7b33a941b3558837e17cb25cbb10566dea2ce:generator_Hu_Zernike.py
 
 get_huMoments(output2, "output2")
 output2CentroidCoordinate = calcCentroid(invert_image(output2))
@@ -251,8 +303,13 @@ get_zernikeMoments(output2, "Output2")
 
 #get_zernikeMoments(scene2, "Scene2")
 
+<<<<<<< HEAD:generator_zernike.py
+get_matchShapes(output1, output2, "output1", "output2")
+get_matchShapes(output1, scene2, "output1", "scene2")
+=======
 get_matchShapes(invert_image(scene_out), invert_image(output1), "scene", "output1")
 get_matchShapes(invert_image(scene_out), invert_image(scene_out2), "scene", "scene2")
+>>>>>>> 7eb7b33a941b3558837e17cb25cbb10566dea2ce:generator_Hu_Zernike.py
 
 def pca(img):
 
@@ -287,7 +344,8 @@ def pca(img):
 		sz = len(contour)
 		data_pts = np.empty((sz, 2), dtype=np.float64)
 
-		# cv2.drawContours(scene, contours, i, (0, 255, 0), 3)
+		#cv2.drawContours(img, contours, i, (0, 255, 0), -1)
+		#cv2.fillPoly(img, pts =[contours], color=(0,0,0))
 
 		for i in range(data_pts.shape[0]):
 			data_pts[i,0] = contour[i,0,0]
@@ -410,6 +468,7 @@ zernikeMatchShapes(scene_out, output1_center)
 zernikeMatchShapes(scene_out, scene_out2)
 
 centralizeOutputs(output1, output2, output1CentroidCoordinate, output2CentroidCoordinate)
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

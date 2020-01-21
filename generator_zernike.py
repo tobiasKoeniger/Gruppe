@@ -82,7 +82,7 @@ def generateScene():
     obj1 = add_images4(img1[0], img1[1], img1[2], img1[3])
 
     obj1 = translate(obj1, 0, 100)
-    
+
     return add_images(obj0,obj1)
 
 
@@ -122,6 +122,8 @@ def calcCentroid(img):
     print()
     print("Flächenschwerpunkt: {}, {}".format(cX, cY))
 
+    return [cX, cY]
+
 
 # Zernike Moments
 def get_zernikeMoments(img, name):
@@ -144,7 +146,7 @@ def zernikeMatchShapes(img1, img2):
 	zernike_contours_match1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 	for k in range(0, 24):
 		zernike_contours_match1[k] = abs(1/(zernike1[k]) - 1/(zernike2[k]))
-		
+
 	zernike_contours_match2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 	for w in range(0, 24):
 		zernike_contours_match2[w] = abs(zernike1[w] - zernike2[w])
@@ -369,5 +371,7 @@ output2 = pca(output2)
 cv2.imshow('output1', output1)
 cv2.imshow('output2', output2)
 
+centralizeOutputs(output1, output2, output1CentroidCoordinate, output2CentroidCoordinate)
 
-
+cv2.waitKey(0)
+cv2.destroyAllWindows()

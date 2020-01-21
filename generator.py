@@ -10,6 +10,9 @@ from math import atan2, cos, sin, sqrt, pi
 from os import listdir
 import numpy as np
 
+from PIL import Image 
+import PIL
+
 from random import randint
 from mahotas import features
 from sklearn.decomposition import PCA
@@ -135,6 +138,33 @@ def get_zernikeMoments(img, name):
 
 	return zernike
 
+def zernikeMatchShapes(img1, img2):
+	img3 = invert_image(img1)
+	img4 = invert_image(img2)
+	ordnung = 8
+	radius = 200
+	zernike1 = features.zernike_moments(img3, radius, ordnung)
+	zernike2 = features.zernike_moments(img4, radius, ordnung)
+
+	zernike_contours_match1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	for k in range(0, 24):
+		zernike_contours_match1[k] = abs(1/(zernike1[k]) - 1/(zernike2[k]))
+		
+	zernike_contours_match2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	for w in range(0, 24):
+		zernike_contours_match2[w] = abs(zernike1[w] - zernike2[w])
+
+	zernike_contours_match3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	for f in range(0, 24):
+		zernike_contours_match3[f] = (abs(zernike1[f] - zernike2[f]))/(abs(zernike1[f]))
+
+	zernike_match = [0, 0, 0]
+	zernike_match[0]= np.sum(zernike_contours_match1)
+	zernike_match[1]= np.sum(zernike_contours_match2)
+	zernike_match[2]= np.sum(zernike_contours_match3)
+
+	print()
+	print("zernike matching", zernike_match)
 
 # PCA Achsen Zeichnen
 def drawAxis(img, p_, q_, colour, scale):
@@ -164,21 +194,46 @@ def drawAxis(img, p_, q_, colour, scale):
 scene = generateScene()
 #scene2 = generateScene()
 
-cv2.imshow("Scene", scene)
+# Threshold.
+# Set values equal to or above 220 to 0.
+# Set values below 220 to 255.
+ 
+th, im_th = cv2.threshold(scene, 220, 255, cv2.THRESH_BINARY_INV);
+ 
+# Copy the thresholded image.
+im_floodfill = im_th.copy()
+ 
+# Mask used to flood filling.
+# Notice the size needs to be 2 pixels than the image.
+h, w = im_th.shape[:2]
+mask = np.zeros((h+2, w+2), np.uint8)
+ 
+# Floodfill from point (0, 0)
+cv2.floodFill(im_floodfill, mask, (0,0), 255);
+ 
+# Invert floodfilled image
+im_floodfill_inv = cv2.bitwise_not(im_floodfill)
+ 
+# Combine the two images to get the foreground.
+scene_out = im_th | im_floodfill_inv
+
+scene_out = invert_image(scene_out)
+
+cv2.imshow("Scene", scene_out)
 #cv2.imshow("Scene2", scene2)
 
-get_huMoments(scene, "scene")
-sceneCentroidCoordinate = calcCentroid(invert_image(scene))
-get_zernikeMoments(scene, "Scene")
+get_huMoments(scene_out, "scene_out")
+sceneCentroidCoordinate = calcCentroid(invert_image(scene_out))
+get_zernikeMoments(scene_out, "Scene")
 
-output1 = rotate(scene, randint(0, 360))
+output1 = rotate(scene_out, randint(0, 360))
 output1 = translate(output1, randint(-200, 200), randint(-200, 200))
 
 get_huMoments(output1, "output1")
 output1CentroidCoordinate = calcCentroid(invert_image(output1))
 get_zernikeMoments(output1, "Output1")
 
-output2 = rotate(scene, randint(0, 360))
+output2 = rotate(scene_out, randint(0, 360))
 output2 = translate(output2, randint(-200, 200), randint(-200, 200))
 
 get_huMoments(output2, "output2")
@@ -191,7 +246,7 @@ get_matchShapes(output1, output2, "output1", "output2")
 #get_matchShapes(output1, scene2, "output1", "scene2")
 
 def pca(img):
-
+	
 	# Convert image to binary
 	_, bw = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
@@ -204,7 +259,7 @@ def pca(img):
 		area = cv2.contourArea(contour)
 		# Ignore contours that are too small or too large
 		if area < 1e2 or 1e5 < area:
-		    continue
+			continue
 
 		contour_size += len(contour)
 
@@ -299,8 +354,8 @@ def pca(img):
 	p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0])
 	p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1])
 
-	drawAxis(img, cntr, p1, (0, 255, 0), 1)
-	drawAxis(img, cntr, p2, (0, 255, 0), 1)
+	drawAxis(img, cntr, p1, (255, 255, 255), 1)
+	drawAxis(img, cntr, p2, (255, 255, 255), 1)
 
 	# PCA mit sklearn
 	pca = PCA(n_components=2)
@@ -340,6 +395,8 @@ output2 = pca(output2)
 
 cv2.imshow('output1', output1)
 cv2.imshow('output2', output2)
+
+zernikeMatchShapes(output1, output2)
 
 centralizeOutputs(output1, output2, output1CentroidCoordinate, output2CentroidCoordinate)
 

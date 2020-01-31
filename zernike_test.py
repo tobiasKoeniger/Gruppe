@@ -195,7 +195,7 @@ while(i<testNumber):
 
     if(check_old == check):
         cv2.imshow(str(i)+".scene1", scene_out)
-        cv2.imshow(str(i)+".output1", output1)
+        cv2.imshow(str(i)+".output1", output1_center)
         cv2.imshow(str(i)+".scene2", scene_out2)
 
     i += 1

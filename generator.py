@@ -163,7 +163,7 @@ def getZernikeMatchShapes(img0, img1, name0, name1):
 	zernike_match[1]= np.sum(zernike_contours_match2)
 	zernike_match[2]= np.sum(zernike_contours_match3)
 
-	print("\n ZernikeContoursMatch of "+ name0 +" and "+ name1 +": {}".format(zernike_match))
+	print("\nZernikeContoursMatch of "+ name0 +" and "+ name1 +": {}".format(zernike_match))
 
 # PCA Achsen Zeichnen
 def drawAxis(img, p_, q_, colour, scale):

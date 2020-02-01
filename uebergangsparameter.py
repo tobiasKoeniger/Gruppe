@@ -194,18 +194,27 @@ while(j<testNumber):
 			cv2.imshow(str(i)+".scene2", scene_out2)
 
 		i += 1
-		print("Übergangsparameter: " + str(uebergangsParamater))
-
-	result = float(check/i)*100
+		print(str(j+1) + ".Übergangsparameter: " + str(uebergangsParamater) + " ÜbergangsIds: " + str(uebergangsId))
 	
 	uebergangsParamaterListe.append(uebergangsParamater)
 
-	print("\n" + str(result) + "% der Tests sind erfolgreich")
-	print("Übergangsparameter: " + str(uebergangsParamater) + " ÜbergangsIds: " + str(uebergangsId))
-
 	j += 1
+
+print("\nÜbergangsparameterliste" + ": {}".format(uebergangsParamaterListe))
+
+n1List = []
+n2List = []
+n3List = []
+
+
+for uebergangsParamaterTriple in uebergangsParamaterListe:
+	n1List.append(uebergangsParamaterTriple[0])
+	n2List.append(uebergangsParamaterTriple[1])
+	n3List.append(uebergangsParamaterTriple[2])
 	
-print("Übergangsparameterliste: " + str(uebergangsParamaterListe))
-	
+uebergangsParamater = [min(n1List), min(n2List), min(n3List)]	
+
+print("\nMinimaler Übergangsparameter: " + str(uebergangsParamater))
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()

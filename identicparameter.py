@@ -82,14 +82,14 @@ def get_huMoments(img, name):
 	return huMoments
 
 
-def get_matchShapes(img0, img1, name0, name1, id):
+def get_matchShapes(img0, img1, name0, name1):
 	# MatchShapes
 	contours_match = [0, 0, 0]
 	contours_match[0] = cv2.matchShapes(img0, img1, cv2.CONTOURS_MATCH_I1, 0)
 	contours_match[1] = cv2.matchShapes(img0, img1, cv2.CONTOURS_MATCH_I2, 0)
 	contours_match[2] = cv2.matchShapes(img0, img1, cv2.CONTOURS_MATCH_I3, 0)
 
-	print("\n"+id + ".ContoursMatch of "+ name0 +" and "+ name1 +": {}".format(contours_match))
+	print("\nContoursMatch of "+ name0 +" and "+ name1 +": {}".format(contours_match))
 
 	return contours_match
 
@@ -122,99 +122,74 @@ def fillContour(img):
 
 #Ausführbereich
 
-testNumber = int(input("Wie viele Szenen sollen für den Übergangsparameter generiert und getestet werden? "))
+#Generiere 1000 Szenen
+sceneList = []
+j = 0
+
+kernel = np.ones((5,5),np.uint8)
+
+while (j<1000):
+	sceneList.append(generateScene())
+	sceneList[j] = cv2.erode(sceneList[j],kernel,iterations = 1)
+	sceneList[j] = fillContour(sceneList[j])
+	j += 1
+	print(str(j)+" Szenen generiert")
+	
+#Generiere Orginalszene
+
+scene = generateScene()
+
+scene_out = cv2.erode(scene,kernel,iterations = 1)
+scene_out = fillContour(scene_out)
+
+output1 = rotate(scene_out, randint(0, 360))
+output1 = translate(output1, randint(-150, 150), randint(-150, 150))
+
+contoursMatch1 = get_matchShapes(invert_image(scene_out), invert_image(output1), "scene1", "output1")
+
+
+cv2.imshow("scene1", scene_out)
+cv2.imshow("output1", output1)
+
+#Vergleich und Speicherung der 10 kleinsten Match-Werte
+
+minMatchValueList = []
+contoursMatchList = []
+
+i = 0
+
+while(i<1000):
+
+	contoursMatch2 = get_matchShapes(invert_image(output1), invert_image(sceneList[i]), "Output1", "scene2")
+
+	contoursMatchList.append(contoursMatch2)
+	
+	i += 1
+	
+contoursMatchList.sort()
+
+k = 0
+
+while(k<10):
+	
+	minMatchValueList.append(contoursMatchList[k])
+	
+	i = 0
+	while(i<1000):
+		contoursMatch2 = get_matchShapes(invert_image(output1), invert_image(sceneList[i]), "Output1", "scene2")
+		if (minMatchValueList[k][0] == contoursMatch2[0]):
+			if (minMatchValueList[k][1] == contoursMatch2[1]):
+				if (minMatchValueList[k][2] == contoursMatch2[2]):
+					cv2.imshow(str(k)+".scene2", sceneList[i])
+		i += 1
+	
+	k += 1
 
 j = 0
-uebergangsParamaterListe = []
-
-while(j<testNumber):
-
-	i = 0
-	check = 0
-	value0 = 0
-	value1 = 0
-	value2 = 0
-	uebergangsParamater = [value0, value1, value2]
-	uebergangsId = [0,0,0]
-
-	scene = generateScene()
-
-	kernel = np.ones((5,5),np.uint8)
-
-	scene_out = cv2.erode(scene,kernel,iterations = 1)
-	scene_out = fillContour(scene_out)
-
-	output1 = rotate(scene_out, randint(0, 360))
-	output1 = translate(output1, randint(-150, 150), randint(-150, 150))
-
-	contoursMatch1 = get_matchShapes(invert_image(scene_out), invert_image(output1), "scene1", "output1", str(i+1))
-
-	while(uebergangsParamater[0] == 0 or uebergangsParamater[1] == 0 or uebergangsParamater[2] == 0):
-
-		scene2 = generateScene()
-
-		scene_out2 = cv2.erode(scene2,kernel,iterations = 1)
-
-		#cv2.imshow("Scene", scene_out)
-
-		scene_out2 = fillContour(scene_out2)
-
-		#cv2.imshow("Scene2", scene_out2)
-
-		#get_huMoments(scene_out, "scene_out")
-
-		#get_huMoments(output1, "output1")
-
-		check_old = check
-
-		contoursMatch2 = get_matchShapes(invert_image(output1), invert_image(scene_out2), "Output1", "scene2", str(i+1))
-
-		if contoursMatch1[0]<=contoursMatch2[0]:
-			if contoursMatch1[1]<=contoursMatch2[1]:
-				if contoursMatch1[2]<=contoursMatch2[2]:
-					check += 1
-
-		if(check_old == check):
-			if(contoursMatch1[0]>contoursMatch2[0]):
-				if(value0 < contoursMatch1[0]):
-					value0 = contoursMatch1[0]
-					uebergangsId[0] = i
-			if(contoursMatch1[1]>contoursMatch2[1]):
-				if(value1 < contoursMatch1[1]):
-					value1 = contoursMatch1[1]
-					uebergangsId[1] = i
-			if(contoursMatch1[2]>contoursMatch2[2]):
-				if(value2 < contoursMatch1[2]):
-					value2 = contoursMatch1[2]
-					uebergangsId[2] = i
-			uebergangsParamater = [value0, value1, value2]
-
-			cv2.imshow(str(i)+".scene1", scene_out)
-			cv2.imshow(str(i)+".output1", output1)
-			cv2.imshow(str(i)+".scene2", scene_out2)
-
-		i += 1
-		print(str(j+1) + ".Übergangsparameter: " + str(uebergangsParamater) + " ÜbergangsIds: " + str(uebergangsId))
-	
-	uebergangsParamaterListe.append(uebergangsParamater)
-
+while(j<10):
+	print(str(j)+". " + str(minMatchValueList[j]))
 	j += 1
-
-print("\nÜbergangsparameterliste" + ": {}".format(uebergangsParamaterListe))
-
-n1List = []
-n2List = []
-n3List = []
-
-
-for uebergangsParamaterTriple in uebergangsParamaterListe:
-	n1List.append(uebergangsParamaterTriple[0])
-	n2List.append(uebergangsParamaterTriple[1])
-	n3List.append(uebergangsParamaterTriple[2])
-	
-uebergangsParamater = [min(n1List), min(n2List), min(n3List)]	
-
-print("\nMinimaler Übergangsparameter: " + str(uebergangsParamater))
+print(str(contoursMatch1))
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

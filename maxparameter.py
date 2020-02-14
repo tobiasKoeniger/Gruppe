@@ -135,61 +135,72 @@ while (j<1000):
 	j += 1
 	print(str(j)+" Szenen generiert")
 	
-#Generiere Orginalszene
+maxParameterList = []
 
-scene = generateScene()
+AnzahlOrginalSzenen = input("Mit wie vielen Orginalszenen möchtest du die Datenbank vergleichen?")
 
-scene_out = cv2.erode(scene,kernel,iterations = 1)
-scene_out = fillContour(scene_out)
+n = 0
 
-output1 = rotate(scene_out, randint(0, 360))
-output1 = translate(output1, randint(-150, 150), randint(-150, 150))
-
-contoursMatch1 = get_matchShapes(invert_image(scene_out), invert_image(output1), "scene1", "output1")
-
-
-cv2.imshow("scene1", scene_out)
-cv2.imshow("output1", output1)
-
-#Vergleich und Speicherung der 10 kleinsten Match-Werte
-
-minMatchValueList = []
-contoursMatchList = []
-
-i = 0
-
-while(i<1000):
-
-	contoursMatch2 = get_matchShapes(invert_image(output1), invert_image(sceneList[i]), "Output1", "scene2")
-
-	contoursMatchList.append(contoursMatch2)
+while(n<int(AnzahlOrginalSzenen)):
 	
-	i += 1
-	
-contoursMatchList.sort()
+	#Generiere Orginalszene
 
-k = 0
+	scene = generateScene()
 
-while(k<10):
-	
-	minMatchValueList.append(contoursMatchList[k])
-	
+	scene_out = cv2.erode(scene,kernel,iterations = 1)
+	scene_out = fillContour(scene_out)
+
+	output1 = rotate(scene_out, randint(0, 360))
+	output1 = translate(output1, randint(-150, 150), randint(-150, 150))
+
+	contoursMatch1 = get_matchShapes(invert_image(scene_out), invert_image(output1), "scene1", "output1")
+
+
+	cv2.imshow(str(n) + ".scene1", scene_out)
+	cv2.imshow(str(n) + ".output1", output1)
+
+	#Vergleich und Speicherung der 10 größten Match-Werte
+
+	contoursMatchList = []
+
 	i = 0
+
 	while(i<1000):
+
 		contoursMatch2 = get_matchShapes(invert_image(output1), invert_image(sceneList[i]), "Output1", "scene2")
-		if (minMatchValueList[k][0] == contoursMatch2[0]):
-			if (minMatchValueList[k][1] == contoursMatch2[1]):
-				if (minMatchValueList[k][2] == contoursMatch2[2]):
-					cv2.imshow(str(k)+".scene2", sceneList[i])
+
+		contoursMatchList.append(contoursMatch2)
+		
 		i += 1
+
+	maxParameterList.append(max(contoursMatchList))
+
+	#k = 0
+
+	#while(k<10):
+		
+	#	maxMatchValueList.append(contoursMatchList[k])
+		
+	#	i = 0
+	#	while(i<1000):
+	#		contoursMatch2 = get_matchShapes(invert_image(output1), invert_image(sceneList[i]), "Output1", "scene2")
+	#		if (maxMatchValueList[k][0] == contoursMatch2[0]):
+	#			if (maxMatchValueList[k][1] == contoursMatch2[1]):
+	#				if (maxMatchValueList[k][2] == contoursMatch2[2]):
+	#					cv2.imshow(str(k)+".scene2", sceneList[i])
+	#		i += 1
+		
+	#	k += 1
 	
-	k += 1
+	print("ContoursMatch of Scene1 and Output1: " + str(contoursMatch1))
+	n += 1
 
 j = 0
-while(j<10):
-	print(str(j)+". " + str(minMatchValueList[j]))
+while(j<int(AnzahlOrginalSzenen)):
+	print(str(j)+". Szene mit Datenbank: " + str(maxParameterList[j]))
 	j += 1
-print("ContoursMatch of Scene1 and Output1: " + str(contoursMatch1))
+print("Größter Parameter aus Vergleich von Orginalszene mit Datenbank: " + str(max(maxParameterList)))
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

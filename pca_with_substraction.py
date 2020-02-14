@@ -238,8 +238,8 @@ output1 = translate(output1, randint(-150, 150), randint(-150, 150))
 cv2.imshow('output1', output1)
 
 vertical = [0,1]
-output1_rotate = rotate(output1, angle(vector_angle_rotate_1, vertical))
-output1_rotate_add180 = rotate(output1, 180 + angle(vector_angle_rotate_1, vertical))
+output1_rotate = rotate(output1, angle(vector_angle_rotate_1, vector_angle))
+output1_rotate_add180 = rotate(output1, 180 + angle(vector_angle_rotate_1, vector_angle))
 
 cv2.imshow('output1_rotate', output1_rotate)
 
@@ -255,6 +255,23 @@ sub2 = substraction(output1_rotate, scene2, output1_rotate_CentroidCoordinate, s
 cv2.imshow('sub1', sub1)
 cv2.imshow('sub1_add180', sub1_add180)
 cv2.imshow('sub2', sub2)
+
+count1 = cv2.countNonZero(sub1)
+count1add180 = cv2.countNonZero(sub1_add180)
+count2 = cv2.countNonZero(sub2)
+
+
+print(800*600-count1)
+print(800*600-count1add180)
+print(800*600-count2)
+
+#Generiere 1000 Szenen
+sceneList = []
+j = 0
+
+kernel = np.ones((5,5),np.uint8)
+
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

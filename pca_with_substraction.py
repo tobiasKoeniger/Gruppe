@@ -237,40 +237,46 @@ output1 = translate(output1, randint(-150, 150), randint(-150, 150))
 
 cv2.imshow('output1', output1)
 
-vertical = [0,1]
+#vertical = [0,1]
 output1_rotate = rotate(output1, angle(vector_angle_rotate_1, vector_angle))
 output1_rotate_add180 = rotate(output1, 180 + angle(vector_angle_rotate_1, vector_angle))
 
-cv2.imshow('output1_rotate', output1_rotate)
+output1_rotate_2 = rotate(output1, angle(vector_angle_rotate_1, vector_angle2))
+output1_rotate_add180_2 = rotate(output1, 180 + angle(vector_angle_rotate_1, vector_angle2))
 
 sceneCentroidCoordinate = calcCentroid(invert_image(scene_out))
 scene2CentroidCoordinate = calcCentroid(invert_image(scene_out2))
+
 output1_rotate_CentroidCoordinate = calcCentroid(invert_image(output1_rotate))
 output1_rotate_add180_CentroidCoordinate = calcCentroid(invert_image(output1_rotate_add180))
 
+output1_rotate_2_CentroidCoordinate = calcCentroid(invert_image(output1_rotate_2))
+output1_rotate_add180_2_CentroidCoordinate = calcCentroid(invert_image(output1_rotate_add180_2))
+
 sub1 = substraction(output1_rotate, scene1, output1_rotate_CentroidCoordinate, sceneCentroidCoordinate)
 sub1_add180 = substraction(output1_rotate_add180, scene1, output1_rotate_add180_CentroidCoordinate, sceneCentroidCoordinate)
-sub2 = substraction(output1_rotate, scene2, output1_rotate_CentroidCoordinate, scene2CentroidCoordinate)
+sub2 = substraction(output1_rotate_2, scene2, output1_rotate_2_CentroidCoordinate, scene2CentroidCoordinate)
+sub2_add180 = substraction(output1_rotate_add180_2, scene2, output1_rotate_add180_2_CentroidCoordinate, scene2CentroidCoordinate)
 
 cv2.imshow('sub1', sub1)
 cv2.imshow('sub1_add180', sub1_add180)
 cv2.imshow('sub2', sub2)
+cv2.imshow('sub2_add180', sub2_add180)
 
+
+scene1_pixel = cv2.countNonZero(scene_out)
+scene2_pixel = cv2.countNonZero(scene_out2)
 count1 = cv2.countNonZero(sub1)
 count1add180 = cv2.countNonZero(sub1_add180)
 count2 = cv2.countNonZero(sub2)
+count2add180 = cv2.countNonZero(sub2_add180)
 
-
-print(800*600-count1)
-print(800*600-count1add180)
-print(800*600-count2)
-
-#Generiere 1000 Szenen
-sceneList = []
-j = 0
-
-kernel = np.ones((5,5),np.uint8)
-
+print('scene_1 schwarz Pixeln =',800*600-scene1_pixel)
+print('scene_2 schwarz Pixeln =',800*600-scene2_pixel)
+print('sub1 schwarz Pixeln =',800*600-count1)
+print('sub1_add180 schwarz Pixeln =',800*600-count1add180)
+print('sub2 schwarz Pixeln =',800*600-count2)
+print('sub2_add180 schwarz Pixeln =',800*600-count2add180)
 
 
 cv2.waitKey(0)

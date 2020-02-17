@@ -2,16 +2,13 @@ from __future__ import print_function
 from __future__ import division
 from math import atan2, cos, sin, sqrt, pi
 
-
-from os import listdir
+from sklearn.decomposition import PCA
+from random import randint
+import cv2
+import math
 import numpy as np
 
-
-from random import randint
-from mahotas import features
-from sklearn.decomposition import PCA
-import math
-import cv2
+print("x"*50 + "\nHu-Moment-Test\n" + "x"*50 + "\n")
 
 #Funktionsdefinitionen
 
@@ -76,18 +73,33 @@ def generateScene():
     return add_images(obj0,obj1)
 
 
-# Flächenschwerpunkt berechnen
-def calcCentroid(img):
-    moments = cv2.moments(img, False)
+def get_huMoments(img, name):
+	# Hu-Momente
+	moments = cv2.moments(img, False)
+	huMoments = cv2.HuMoments(moments)
 
-    cX = float(moments["m10"] / moments["m00"])
-    cY = float(moments["m01"] / moments["m00"])
+	# log Transformation
+	for i in range(0,7):
+		huMoments[i] = -1* math.copysign(1.0, huMoments[i]) * math.log10(abs(huMoments[i]))
+	print()
+	print("HuMoments (log corrected) from "+ name +": {}".format(huMoments))
 
-    return [cX, cY]
+	return huMoments
 
+
+def get_matchShapes(img0, img1, name0, name1):
+	# MatchShapes
+	contours_match = [0, 0, 0]
+	contours_match[0] = cv2.matchShapes(img0, img1, cv2.CONTOURS_MATCH_I1, 0)
+	contours_match[1] = cv2.matchShapes(img0, img1, cv2.CONTOURS_MATCH_I2, 0)
+	contours_match[2] = cv2.matchShapes(img0, img1, cv2.CONTOURS_MATCH_I3, 0)
+
+	print("\nContoursMatch of "+ name0 +" and "+ name1 +": {}".format(contours_match))
+
+	return contours_match
 
 def fillContour(img):
-    	# Threshold.
+	# Threshold.
 	# Set values equal to or above 220 to 0.
 	# Set values below 220 to 255.
 
@@ -111,7 +123,7 @@ def fillContour(img):
 	img_out = im_th | im_floodfill_inv
 
 	return invert_image(img_out)
-
+	
 def pca(img):
     
 	# Convert image to binary
@@ -197,86 +209,122 @@ def angle(v1, v2):
     ang1 = np.arctan2(*v1[::-1])
     ang2 = np.arctan2(*v2[::-1])
     return ((ang1 - ang2)*360/(2 * np.pi))
-
-def centralizeOutputs(img1, img2, img1CentroidCoordinate, img2CentroidCoordinate):
+	
+def centralizeOutputs(img1, img1CentroidCoordinate):
     img1 = translate(img1, -img1CentroidCoordinate[0]+300, -img1CentroidCoordinate[1]+400)
-    img2 = translate(img2, -img2CentroidCoordinate[0]+300, -img2CentroidCoordinate[1]+400)
-    resultImg = add_images(img1, img2)
-    cv2.imshow('result_add', resultImg)
+    #resultImg = add_images(img1, img2)
+    #cv2.imshow('result_add', resultImg)
+    return img1
+	
+# Flächenschwerpunkt berechnen
+def calcCentroid(img):
+    moments = cv2.moments(img, False)
 
-def substraction(img1, img2, img1CentroidCoordinate, img2CentroidCoordinate):
-	img1 = translate(img1, -img1CentroidCoordinate[0]+300, -img1CentroidCoordinate[1]+400)
-	img2 = translate(img2, -img2CentroidCoordinate[0]+300, -img2CentroidCoordinate[1]+400)
-	subImg = cv2.subtract(invert_image(img1), invert_image(img2))
-	return invert_image(subImg)
+    cX = float(moments["m10"] / moments["m00"])
+    cY = float(moments["m01"] / moments["m00"])
 
-#Scene generieren
-scene = generateScene()
-scene2 = generateScene()
+    return [cX, cY]
+
+#Ausführbereich
+
+#Generiere 1000 Szenen
+sceneList = []
+j = 0
 
 kernel = np.ones((5,5),np.uint8)
 
-scene_out = cv2.erode(scene,kernel,iterations = 1)
-scene_out2 = cv2.erode(scene2,kernel,iterations = 1)
+while (j<1000):
+	sceneList.append(generateScene())
+	sceneList[j] = cv2.erode(sceneList[j],kernel,iterations = 1)
+	sceneList[j] = fillContour(sceneList[j])
+	j += 1
+	print(str(j)+" Szenen generiert")
+	
+maxParameterList = []
 
-scene_out = fillContour(scene_out)
+AnzahlOrginalSzenen = input("Mit wie vielen Orginalszenen möchtest du die Datenbank vergleichen?")
 
-cv2.imshow("Scene1", scene_out)
+n = 0
 
-scene_out2 = fillContour(scene_out2)
+while(n<int(AnzahlOrginalSzenen)):
+	
+	#Generiere Orginalszene
 
-cv2.imshow("Scene2", scene_out2)
+	scene = generateScene()
 
-output1 = rotate(scene_out, randint(0, 360))
-output1 = translate(output1, randint(-150, 150), randint(-150, 150))
+	scene_out = cv2.erode(scene,kernel,iterations = 1)
+	scene_out = fillContour(scene_out)
 
-##Ausführbereich
-[scene1, vector_angle] = pca(scene_out)
-[scene2, vector_angle2] = pca(scene_out2)
-[output1, vector_angle_rotate_1] = pca(output1)
+	output1 = rotate(scene_out, randint(0, 360))
+	output1 = translate(output1, randint(-150, 150), randint(-150, 150))
 
-cv2.imshow('output1', output1)
+	contoursMatch1 = get_matchShapes(invert_image(scene_out), invert_image(output1), "scene1", "output1")
 
-#vertical = [0,1]
-output1_rotate = rotate(output1, angle(vector_angle_rotate_1, vector_angle))
-output1_rotate_add180 = rotate(output1, 180 + angle(vector_angle_rotate_1, vector_angle))
+	cv2.imshow(str(n) + ".scene1", scene_out)
+	cv2.imshow(str(n) + ".output1", output1)
+	
+	[scene1, vector_angle] = pca(scene_out)
+	[output1, vector_angle_rotate_1] = pca(output1)
 
-output1_rotate_2 = rotate(output1, angle(vector_angle_rotate_1, vector_angle2))
-output1_rotate_add180_2 = rotate(output1, 180 + angle(vector_angle_rotate_1, vector_angle2))
+	#Vergleich und Speicherung der 10 größten Match-Werte
 
-sceneCentroidCoordinate = calcCentroid(invert_image(scene_out))
-scene2CentroidCoordinate = calcCentroid(invert_image(scene_out2))
+	contoursMatchList = []
 
-output1_rotate_CentroidCoordinate = calcCentroid(invert_image(output1_rotate))
-output1_rotate_add180_CentroidCoordinate = calcCentroid(invert_image(output1_rotate_add180))
+	i = 0
 
-output1_rotate_2_CentroidCoordinate = calcCentroid(invert_image(output1_rotate_2))
-output1_rotate_add180_2_CentroidCoordinate = calcCentroid(invert_image(output1_rotate_add180_2))
+	while(i<10):
+	
+		[scene2, vector_angle2] = pca(sceneList[i])
+		
+		output1_rotate_2 = rotate(output1, angle(vector_angle_rotate_1, vector_angle2))
+		output1_rotate_add180_2 = rotate(output1, 180 + angle(vector_angle_rotate_1, vector_angle2))
+		
+		output1_rotate_2_CentroidCoordinate = calcCentroid(invert_image(output1_rotate_2))
+		output1_rotate_add180_2_CentroidCoordinate = calcCentroid(invert_image(output1_rotate_add180_2))
+		
+		output1_rotate_2 = centralizeOutputs(output1_rotate_2,output1_rotate_2_CentroidCoordinate)
+		output1_rotate_add180_2 = centralizeOutputs(output1_rotate_add180_2,output1_rotate_add180_2_CentroidCoordinate)
+		
+		cv2.imshow(str(i) + "output1_rotate_2", output1_rotate_2)
+		cv2.imshow(str(i) + "output1_rotate_add180_2", output1_rotate_add180_2)
+		
+		contoursMatch2 = get_matchShapes(invert_image(output1_rotate_2), invert_image(scene2), "Output1", "scene2")
 
-sub1 = substraction(output1_rotate, scene1, output1_rotate_CentroidCoordinate, sceneCentroidCoordinate)
-sub1_add180 = substraction(output1_rotate_add180, scene1, output1_rotate_add180_CentroidCoordinate, sceneCentroidCoordinate)
-sub2 = substraction(output1_rotate_2, scene2, output1_rotate_2_CentroidCoordinate, scene2CentroidCoordinate)
-sub2_add180 = substraction(output1_rotate_add180_2, scene2, output1_rotate_add180_2_CentroidCoordinate, scene2CentroidCoordinate)
+		contoursMatchList.append(contoursMatch2)
+		
+		contoursMatch2 = get_matchShapes(invert_image(output1_rotate_add180_2), invert_image(scene2), "Output1", "scene2")
 
-cv2.imshow('sub1', sub1)
-cv2.imshow('sub1_add180', sub1_add180)
-cv2.imshow('sub2', sub2)
-cv2.imshow('sub2_add180', sub2_add180)
+		contoursMatchList.append(contoursMatch2)
+		
+		i += 1
 
+	maxParameterList.append(max(contoursMatchList))
 
-scene1_pixel = cv2.countNonZero(scene_out)
-scene2_pixel = cv2.countNonZero(scene_out2)
-count1 = cv2.countNonZero(sub1)
-count1add180 = cv2.countNonZero(sub1_add180)
-count2 = cv2.countNonZero(sub2)
-count2add180 = cv2.countNonZero(sub2_add180)
+	#k = 0
 
-print('scene_1 schwarz Pixeln =',800*600-scene1_pixel)
-print('scene_2 schwarz Pixeln =',800*600-scene2_pixel)
-print('sub1 schwarz Pixeln =',800*600-count1)
-print('sub1_add180 schwarz Pixeln =',800*600-count1add180)
-print('sub2 schwarz Pixeln =',800*600-count2)
-print('sub2_add180 schwarz Pixeln =',800*600-count2add180)
+	#while(k<10):
+		
+	#	maxMatchValueList.append(contoursMatchList[k])
+		
+	#	i = 0
+	#	while(i<1000):
+	#		contoursMatch2 = get_matchShapes(invert_image(output1), invert_image(sceneList[i]), "Output1", "scene2")
+	#		if (maxMatchValueList[k][0] == contoursMatch2[0]):
+	#			if (maxMatchValueList[k][1] == contoursMatch2[1]):
+	#				if (maxMatchValueList[k][2] == contoursMatch2[2]):
+	#					cv2.imshow(str(k)+".scene2", sceneList[i])
+	#		i += 1
+		
+	#	k += 1
+	
+	print("ContoursMatch of Scene1 and Output1: " + str(contoursMatch1))
+	n += 1
+
+j = 0
+while(j<int(AnzahlOrginalSzenen)):
+	print(str(j)+". Szene mit Datenbank: " + str(maxParameterList[j]))
+	j += 1
+print("Größter Parameter aus Vergleich von Orginalszene mit Datenbank: " + str(max(maxParameterList)))
 
 
 cv2.waitKey(0)

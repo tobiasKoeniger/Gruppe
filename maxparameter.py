@@ -165,7 +165,7 @@ while(n<int(AnzahlOrginalSzenen)):
 
 	i = 0
 
-	while(i<1000):
+	while(i<10):
 
 		contoursMatch2 = get_matchShapes(invert_image(output1), invert_image(sceneList[i]), "Output1", "scene2")
 

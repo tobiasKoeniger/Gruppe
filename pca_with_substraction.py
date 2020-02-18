@@ -196,13 +196,7 @@ def pca(img):
 def angle(v1, v2):
     ang1 = np.arctan2(*v1[::-1])
     ang2 = np.arctan2(*v2[::-1])
-    return ((ang1 - ang2)*360/(2 * np.pi))
-
-def centralizeOutputs(img1, img2, img1CentroidCoordinate, img2CentroidCoordinate):
-    img1 = translate(img1, -img1CentroidCoordinate[0]+300, -img1CentroidCoordinate[1]+400)
-    img2 = translate(img2, -img2CentroidCoordinate[0]+300, -img2CentroidCoordinate[1]+400)
-    resultImg = add_images(img1, img2)
-    cv2.imshow('result_add', resultImg)
+    return np.rad2deg((ang1 - ang2) % (2 * np.pi))
 
 def substraction(img1, img2, img1CentroidCoordinate, img2CentroidCoordinate):
 	img1 = translate(img1, -img1CentroidCoordinate[0]+300, -img1CentroidCoordinate[1]+400)
@@ -255,6 +249,7 @@ output1_rotate_add180_2_CentroidCoordinate = calcCentroid(invert_image(output1_r
 
 sub1 = substraction(output1_rotate, scene1, output1_rotate_CentroidCoordinate, sceneCentroidCoordinate)
 sub1_add180 = substraction(output1_rotate_add180, scene1, output1_rotate_add180_CentroidCoordinate, sceneCentroidCoordinate)
+
 sub2 = substraction(output1_rotate_2, scene2, output1_rotate_2_CentroidCoordinate, scene2CentroidCoordinate)
 sub2_add180 = substraction(output1_rotate_add180_2, scene2, output1_rotate_add180_2_CentroidCoordinate, scene2CentroidCoordinate)
 
@@ -263,21 +258,21 @@ cv2.imshow('sub1_add180', sub1_add180)
 cv2.imshow('sub2', sub2)
 cv2.imshow('sub2_add180', sub2_add180)
 
-
 scene1_pixel = cv2.countNonZero(scene_out)
 scene2_pixel = cv2.countNonZero(scene_out2)
+
 count1 = cv2.countNonZero(sub1)
 count1add180 = cv2.countNonZero(sub1_add180)
+
 count2 = cv2.countNonZero(sub2)
 count2add180 = cv2.countNonZero(sub2_add180)
 
-print('scene_1 schwarz Pixeln =',800*600-scene1_pixel)
-print('scene_2 schwarz Pixeln =',800*600-scene2_pixel)
-print('sub1 schwarz Pixeln =',800*600-count1)
-print('sub1_add180 schwarz Pixeln =',800*600-count1add180)
-print('sub2 schwarz Pixeln =',800*600-count2)
-print('sub2_add180 schwarz Pixeln =',800*600-count2add180)
-
+print('Scene_1 schwarz Pixeln =',800*600-scene1_pixel)
+print('Scene_2 schwarz Pixeln =',800*600-scene2_pixel)
+print('Substraction_1 schwarz Pixeln =',800*600-count1)
+print('Substraction_1_add180 schwarz Pixeln =',800*600-count1add180)
+print('Substraction_2 schwarz Pixeln =',800*600-count2)
+print('Substraction_2_add180 schwarz Pixeln =',800*600-count2add180)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
